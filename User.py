@@ -1,18 +1,12 @@
 from flask_login import UserMixin
+from db import db
 
 users = {
     "test@example.com": {"password": "test123"},
     "a": {"password": "a"}
 }
-class User(UserMixin):
-    def __init__(self, email, password):
-        self.id = email
-        self.password = password
-
-
-    @staticmethod
-    def get(user_id):
-        user = users.get(user_id)
-        if user:
-            return User(user_id, user["password"])
-        return None
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)  # primary keys are required by SQLAlchemy
+    email = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    name = db.Column(db.String(1000))

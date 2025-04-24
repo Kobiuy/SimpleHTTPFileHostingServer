@@ -1,15 +1,23 @@
 import os
 from flask import Flask, render_template, request, send_file, redirect, url_for, flash, Response
 from flask_login import LoginManager, login_required, logout_user, login_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from User import User
+from db import db
+
 DEFAULT_PATH ="C:\\"
 
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.secret_key = "Secret Key"
+
+db.init_app(app)
+
 login_manager = LoginManager()
-app = Flask(__name__)  # Create a Flask instance
 login_manager.init_app(app)
 
-app.secret_key = "Secret Key" # Put your secret key here
+from User import User
+
 @app.route('/hello/<name>')
 def hello(name):
     return f'Hello, {name}!'
@@ -55,9 +63,11 @@ def form():
     return render_template('login.html')
 @app.post("/login")
 def login():
-    user = User.get(request.form.get("email"))
+    email = request.form.get('email')
+    password = request.form.get("password")
+    user = User.query.filter_by(email=email).first()
 
-    if user is None or user.password != request.form.get("password"):
+    if not user or not check_password_hash(user.password, password):
         flash('Invalid Login Credentials')
         return redirect(url_for("login"))
 
@@ -67,7 +77,7 @@ def login():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(int(user_id))
 
 @app.route('/logout')
 @login_required
@@ -87,5 +97,12 @@ def getDirs(path=DEFAULT_PATH):
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+        if not User.query.filter_by(email="root").first():  # Avoid duplicate root user
+            new_user = User(email="root", name="root", password=generate_password_hash("root", method='pbkdf2:sha256'))
+            db.session.add(new_user)         # DB seeding
+            db.session.commit()
+
     app.run(debug=True)  # Run the app in debug mode
 
