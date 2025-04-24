@@ -41,20 +41,20 @@
     </header>
     <form action="/browse" method="GET">
         <span class="title">Directories:</span>
-        <div class="file-list">
+        <ul class="file-list">
            {% for dir in dirs %}
-                <button name="directory" value="{{ dir.path }}">{{ dir.name }}</button>
+                <li><button  class="link-button"  name="directory" value="{{ dir.path }}">{{ dir.name }}</button></li>
             {% endfor %}
-        </div>
+        </ul>
     </form>
 
     <form action="/download" method="GET">
         <span class="title">Files:</span>
-        <div class="file-list">
+        <ul class="file-list">
             {% for file in files %}
-                <button name="file" value="{{file.path}}">{{ file.name }}</button>
+                <li><button  class="link-button"  name="file" value="{{file.path}}">{{ file.name }}</button></li>
             {% endfor %}
-        </div>
+        </ul>
     </form>
 
 </body>
@@ -92,4 +92,17 @@
         .header-action > * {
             padding: 0 5px;
         }
+            .link-button {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        color: #007BFF;
+        text-decoration: underline;
+        cursor: pointer;
+        font: inherit;
+    }
+    .link-button:hover {
+        color: #0056b3;
+    }
     </style>
